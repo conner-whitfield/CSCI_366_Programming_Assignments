@@ -1,10 +1,10 @@
-
+BitArray2D.asm
         global  set_bit_elem
         global  get_bit_elem
         section .text
 
 set_bit_elem:
-        push rbp            ; save the base pointer on the stack (at rsp+8)
+        push rbp                   ; save the base pointer on the stack (at rsp+8)
         mov rbp, rsp        ; set up the rbp for the bottom of this frame
 
         ; rdi contains array pointer
