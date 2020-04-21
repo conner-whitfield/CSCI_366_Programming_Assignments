@@ -46,9 +46,8 @@ int get_file_length(ifstream *file)
 }
 
 // int size;
-vector<vector<char>> p2current; // hold updated version of p2's board
-vector<vector<char>> p1current; // hold updated version of p1's board
-
+vector<vector<char>> p1current; // hold updated version of p2's board
+vector<vector<char>> p2current; // hold updated version of p1's board
 void Server::initialize(unsigned int board_size,
                         string p1_setup_board,
                         string p2_setup_board) // passes all tests for initialize
@@ -138,14 +137,32 @@ void Server::initialize(unsigned int board_size,
             }
         }
     }
+    scan_setup_board(p1_setup_board);
 }
 
 BitArray2D *Server::scan_setup_board(string setup_board_name)
 {
-    
+    p1_setup_board = new BitArray2D(BOARD_SIZE, BOARD_SIZE);
+    p2_setup_board = new BitArray2D(BOARD_SIZE, BOARD_SIZE);
+    for(int i = 0; i < p1current.size(); i++)
+    {
+        for(int j = 0; j < p1current[i].size(); j++)
+        {
+            if (p1current[i][j] != '_') p1_setup_board->set(i, j);
+        }
+    }
+
+    for(int i = 0; i < p2current.size(); i++)
+    {
+        for(int j = 0; j < p2current[i].size(); j++)
+        {
+            if (p2current[i][j] != '_') p2_setup_board->set(i, j);
+        }
+    }
+
 }
 
-int Server::evaluate_shot(unsigned int player, unsigned int x, unsigned int y) // TODO: change evaluation approach
+int Server::evaluate_shot(unsigned int player, unsigned int x, unsigned int y)
 {
     if(player > MAX_PLAYERS || player < 1) // error out if player number is outside bounds
     {
@@ -160,27 +177,25 @@ int Server::evaluate_shot(unsigned int player, unsigned int x, unsigned int y) /
 
     // below lines are reached if no errors or out of bounds shot detected
 
-    vector<vector<char>> temp;  // board to be examined
-    if(player == 1) temp = p2current;   // if player is 1, then check result on player 2 board
-    else if(player == MAX_PLAYERS) temp = p1current;    // if player is 2, then examine player 1 board
-
-    if(temp[y][x] == 'C' || temp[y][x] == 'B' || temp[y][x] == 'R' || temp[y][x] == 'S' || temp[y][x] == 'D')
-    {   // declare hit if the index value is that of a ship letter
-        temp[y][x] = 'X';   // mark hit
-        if(player == 1) p2current = temp;   // update current board
-        else if(player == MAX_PLAYERS) p1current = temp;    // update current board
-        return HIT; // return hit
+    if(player == 2) {
+        if(p1_setup_board->get(y, x) == true)
+        {   // declare hit if the index value is that of a ship letter
+            return HIT; // return hit
+        }
+        else if(p1_setup_board->get(y, x) == false)
+        {
+            return MISS;
+        }
     }
-    else if(temp[y][x] == 'X' || temp[y][x] == 'O')
-    {   // if spot already fired upon, return miss
-        return MISS;
-    }
-    else
-    {   // handle miss
-        temp[y][x] = 'O';   // mark miss in empty spot
-        if(player == 1) p2current = temp;   // update current board
-        else if(player == MAX_PLAYERS) p1current = temp;    // update current board
-        return MISS;
+    else if(player == 1){
+        if(p2_setup_board->get(y, x) == true)
+        {   // declare hit if the index value is that of a ship letter
+            return HIT; // return hit
+        }
+        else if(p2_setup_board->get(y, x) == false)
+        {
+            return MISS;
+        }
     }
 }
 
